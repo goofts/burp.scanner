@@ -1,4 +1,6 @@
-package burp;
+package utils;
+
+import burp.IHttpRequestResponsePersisted;
 
 import java.net.URL;
 import java.text.SimpleDateFormat;
@@ -6,15 +8,15 @@ import java.util.Date;
 import java.util.Map;
 
 public class LogEntry {
-    final int id;
-    final IHttpRequestResponsePersisted requestResponse;
-    final URL url;
-    final String method;
-    final String status;
-    final String proxyResponse;
+    public final int id;
+    public final IHttpRequestResponsePersisted requestResponse;
+    public final URL url;
+    public final String method;
+    public final String status;
+    public final String proxyResponse;
     public String requestTime;
 
-    LogEntry(int id, IHttpRequestResponsePersisted requestResponse, URL url, String method, Map<String,String> mapResult) {
+    public LogEntry(int id, IHttpRequestResponsePersisted requestResponse, URL url, String method, Map<String,String> mapResult) {
         this.id = id;
         this.requestResponse = requestResponse;
         this.url = url;

@@ -1,4 +1,8 @@
-package burp;
+package ui;
+
+import burp.*;
+import config.Config;
+import model.HttpLogTableModel;
 
 import java.awt.*;
 import java.awt.event.ActionEvent;
@@ -42,9 +46,6 @@ public class GUI implements IMessageEditorController {
         contentPane.setBorder(new EmptyBorder(5, 5, 5, 5));
         contentPane.setLayout(new BorderLayout(0, 0));
 
-        ////////////////////////////////////////////////////////////////////
-        // topPanel start
-        ////////////////////////////////////////////////////////////////////
         JPanel topPanel = new JPanel();
         GridBagLayout gridBagLayout = new GridBagLayout();
         gridBagLayout.columnWidths = new int[] { 0, 0 };
@@ -78,7 +79,7 @@ public class GUI implements IMessageEditorController {
 
         tfHost = new JTextField();
         tfHost.setColumns(10);
-        tfHost.setText("127.0.0.1");
+        tfHost.setText("localhost");
         GridBagConstraints gbc_tfHost = new GridBagConstraints();
         gbc_tfHost.fill = 2;
         gbc_tfHost.insets = new Insets(0, 0, 0, 5);
@@ -95,7 +96,7 @@ public class GUI implements IMessageEditorController {
         ConfigPanel.add(lbPort, gbc_lbPort);
 
         tfPort = new JTextField();
-        tfPort.setText("9898");
+        tfPort.setText("7777");
         tfPort.setColumns(10);
         GridBagConstraints gbc_tfPort = new GridBagConstraints();
         gbc_tfPort.fill = 2;
@@ -157,7 +158,6 @@ public class GUI implements IMessageEditorController {
         gbc_tfTimeout.gridy = 0;
         ConfigPanel.add(tfTimeout, gbc_tfTimeout);
 
-        // 增加间隔时间
         lbIntervalTime = new JLabel("Interva lTime:");
         GridBagConstraints gbc_lbIntervalTime = new GridBagConstraints();
         gbc_lbIntervalTime.fill = 2;
@@ -220,7 +220,7 @@ public class GUI implements IMessageEditorController {
         btnClear.addActionListener(new AbstractAction() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                int n = JOptionPane.showConfirmDialog(null, "Are you sure you want to clear the data？", "Passvie Scan Client prompt", JOptionPane.YES_NO_OPTION);
+                int n = JOptionPane.showConfirmDialog(null, "Are you sure you want to clear the data？", "scanner prompt", JOptionPane.YES_NO_OPTION);
                 if(n == 0) {
                     Config.REQUEST_TOTAL = 0;
                     lbRequestCount.setText("0");
@@ -229,21 +229,21 @@ public class GUI implements IMessageEditorController {
                     Config.FAIL_TOTAL = 0;
                     lbFailCount.setText("0");
                     BurpExtender.log.clear();
-                    logTable.getHttpLogTableModel().fireTableDataChanged();//通知模型更新
-                    logTable.updateUI();//刷新表格
+                    logTable.getHttpLogTableModel().fireTableDataChanged();
+                    logTable.updateUI();
                     requestViewer.setMessage("".getBytes(),true);
                     responseViewer.setMessage("".getBytes(),false);
                     proxyRspViewer.setText("".getBytes());
                 }
             }
         });
+
         GridBagConstraints gbc_btnClear = new GridBagConstraints();
         gbc_btnClear.fill = 2;
         gbc_btnClear.insets = new Insets(0, 0, 0, 5);
         gbc_btnClear.gridx = 14;
         gbc_btnClear.gridy = 0;
         ConfigPanel.add(btnClear, gbc_btnClear);
-        ////////////////////////////////////////////////////////////////////
 
         JPanel FilterPanel = new JPanel();
         GridBagConstraints gbc_panel_1 = new GridBagConstraints();
@@ -252,6 +252,7 @@ public class GUI implements IMessageEditorController {
         gbc_panel_1.gridx = 0;
         gbc_panel_1.gridy = 1;
         topPanel.add(FilterPanel, gbc_panel_1);
+
         GridBagLayout gbl_panel_1 = new GridBagLayout();
         gbl_panel_1.columnWidths = new int[] { 40, 225, 0, 0, 0 };
         gbl_panel_1.rowHeights = new int[] { 0, 0 };
@@ -267,7 +268,6 @@ public class GUI implements IMessageEditorController {
         gbc_lblDomain.gridy = 0;
         FilterPanel.add(lbDomain, gbc_lblDomain);
 
-
         tfDomain = new JTextField(20);
         tfDomain.setText("");
         GridBagConstraints gbc_tfDomain = new GridBagConstraints();
@@ -276,7 +276,6 @@ public class GUI implements IMessageEditorController {
         gbc_tfDomain.gridx = 1;
         gbc_tfDomain.gridy = 0;
         FilterPanel.add(tfDomain, gbc_tfDomain);
-
 
         JLabel lbExcludeSuffix = new JLabel("Exclude suffix:");
         GridBagConstraints gbc_lbExcludeSuffix = new GridBagConstraints();
@@ -296,7 +295,6 @@ public class GUI implements IMessageEditorController {
         gbc_tfExcludeSuffix.gridy = 0;
         FilterPanel.add(tfExcludeSuffix, gbc_tfExcludeSuffix);
 
-
         GridBagConstraints gbc_vb = new GridBagConstraints();
         gbc_vb.insets = new Insets(0, 0, 0, 5);
         gbc_vb.fill = 2;
@@ -311,7 +309,6 @@ public class GUI implements IMessageEditorController {
         gbc_lbRequest.gridx = 5;
         gbc_lbRequest.gridy = 0;
         FilterPanel.add(lbRequest, gbc_lbRequest);
-
 
         lbRequestCount = new JLabel("0");
         lbRequestCount.setForeground(new Color(0,0,255));
@@ -371,9 +368,6 @@ public class GUI implements IMessageEditorController {
         FilterPanel.add(lbFailCount, gbc_lbFailCount);
 
         contentPane.add(topPanel,BorderLayout.NORTH);
-        ////////////////////////////////////////////////////////////////////
-        // topPanl end
-        ////////////////////////////////////////////////////////////////////
 
         splitPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT);
         splitPane.setDividerLocation(0.5);
@@ -381,16 +375,9 @@ public class GUI implements IMessageEditorController {
 
         HttpLogTableModel model = new HttpLogTableModel();
         logTable = new HttpLogTable(model);
-        //JTable表头排序,以下两种方法均存在问题，导致界面混乱。
-        //方式一
-        //TableRowSorter<HttpLogTableModel> tableRowSorter=new TableRowSorter<HttpLogTableModel>(model);
-        //logTable.setRowSorter(tableRowSorter);
-        //方式二
-        //logTable.setAutoCreateRowSorter(true);
 
         JScrollPane jspLogTable = new JScrollPane(logTable);
         splitPane.setTopComponent(jspLogTable);
-
 
         JTabbedPane tabs = new JTabbedPane();
         requestViewer = BurpExtender.callbacks.createMessageEditor(this, false);

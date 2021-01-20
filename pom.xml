@@ -8,6 +8,10 @@
     <artifactId>scanner</artifactId>
     <version>1.1.1</version>
 
+    <properties>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    </properties>
+
     <dependencies>
         <!-- https://mvnrepository.com/artifact/net.portswigger.burp.extender/burp-extender-api -->
         <dependency>

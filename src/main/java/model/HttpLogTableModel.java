@@ -1,4 +1,7 @@
-package burp;
+package model;
+
+import burp.BurpExtender;
+import utils.LogEntry;
 
 import javax.swing.table.AbstractTableModel;
 
@@ -13,7 +16,6 @@ public class HttpLogTableModel extends AbstractTableModel {
 
     @Override
     public String getColumnName(int columnIndex) {
-
         switch (columnIndex)
         {
             case 0:
@@ -36,7 +38,6 @@ public class HttpLogTableModel extends AbstractTableModel {
     {
         return String.class;
     }
-
 
     public Object getValueAt(int rowIndex, int columnIndex) {
         LogEntry logEntry = BurpExtender.log.get(rowIndex);

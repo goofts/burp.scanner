@@ -1,5 +1,11 @@
 package burp;
 
+import config.Config;
+import ui.GUI;
+import utils.HttpAndHttpsProxy;
+import utils.LogEntry;
+import utils.Utils;
+
 import java.awt.Component;
 import java.io.PrintWriter;
 import java.util.*;
@@ -29,21 +35,22 @@ public class BurpExtender implements IBurpExtender,ITab,IProxyListener {
         this.stdout = new PrintWriter(callbacks.getStdout(),true);
         this.stderr = new PrintWriter(callbacks.getStderr(),true);
 
+        callbacks.registerContextMenuFactory(new BurpMenu());
         callbacks.setExtensionName(String.format("%s",extensionName));
+        stdout.println(getBanner());
+
         BurpExtender.this.gui = new GUI();
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
                 BurpExtender.this.callbacks.addSuiteTab(BurpExtender.this);
                 BurpExtender.this.callbacks.registerProxyListener(BurpExtender.this);
-                stdout.println(Utils.getBanner());
             }
         });
+
         executorService = Executors.newSingleThreadExecutor();
-        //必须等插件界面显示完毕，重置JTable列宽才生效
         SwingUtilities.invokeLater(new Runnable() {
             @Override
             public void run() {
-                //按照比例显示列宽
                 float[] columnWidthPercentage = {5.0f, 5.0f, 55.0f, 20.0f, 15.0f};
                 int tW = GUI.logTable.getWidth();
                 TableColumn column;
@@ -73,15 +80,14 @@ public class BurpExtender implements IBurpExtender,ITab,IProxyListener {
             IHttpRequestResponse reprsp = iInterceptedProxyMessage.getMessageInfo();
             IHttpService httpService = reprsp.getHttpService();
             String host = reprsp.getHttpService().getHost();
-            //stdout.println(Config.DOMAIN_REGX);
             if(!Utils.isMathch(Config.DOMAIN_REGX,host)){
-                return;
+                return ;
             }
 
             String  url = helpers.analyzeRequest(httpService,reprsp.getRequest()).getUrl().toString();
             url = url.indexOf("?") > 0 ? url.substring(0, url.indexOf("?")) : url;
             if(Utils.isMathch(Config.SUFFIX_REGX,url)){
-                return;
+                return ;
             }
 
             final IHttpRequestResponse resrsp = iInterceptedProxyMessage.getMessageInfo();
@@ -91,24 +97,42 @@ public class BurpExtender implements IBurpExtender,ITab,IProxyListener {
                 public void run() {
                     synchronized(log) {
                         int row = log.size();
+
                         String method = helpers.analyzeRequest(resrsp).getMethod();
                         Map<String, String> mapResult = null;
                         try {
                             mapResult = HttpAndHttpsProxy.Proxy(resrsp);
                         } catch (InterruptedException e) {
-                            // TODO Auto-generated catch block
                             e.printStackTrace();
                         }
 
                         log.add(new LogEntry(iInterceptedProxyMessage.getMessageReference(),
-                                callbacks.saveBuffersToTempFiles(resrsp), helpers.analyzeRequest(resrsp).getUrl(),
+                                callbacks.saveBuffersToTempFiles(resrsp),
+                                helpers.analyzeRequest(resrsp).getUrl(),
                                 method,
                                 mapResult)
                         );
+                        // 通知所有侦听器，已插入范围在 [row, row] 行
                         GUI.logTable.getHttpLogTableModel().fireTableRowsInserted(row, row);
                     }
                 }
             });
         }
+    }
+
+    public static String getBanner(){
+        String bannerInfo =
+                "[+] " + extensionName + " is loaded\n"
+                        + "[+]\n"
+                        + "[+] ###########################################################\n"
+                        + "[+]    " + extensionName + " v" + version +"\n"
+                        + "[+]    anthor:   c0ny1\n"
+                        + "[+]    email:    root@gv7.me\n"
+                        + "[+]    github:   http://github.com/c0ny1/passive-scan-client\n"
+                        + "[+]    modifier: goofts\n"
+                        + "[+]    date:     2021/1/14\n"
+                        + "[+] ###########################################################\n"
+                        + "[+] Please enjoy it";
+        return bannerInfo;
     }
 }
